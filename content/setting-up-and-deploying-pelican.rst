@@ -108,34 +108,59 @@ I will now develop a bit further some of these points
 
 Domain name
 ------------
-I used Namecheap for this. You might as well go with a free hosting solution, that you can redirect
+I used Namecheap for this. You might as well go with a free domain name solution if you want
+
+.. note:: 
+   No need to purchase ssl certificate from the domain provider. We will use a free one
 
 Hosting
 --------
-I decided on a VPS (Virtual private server) and not on a dedicated server, as I do not have the speed/load/bandwidth requirements (unless this blog really picks up!) that would justify the need for it. And so far I have no complaints: installing stuff, logging in, displaying the page, etc. seems good enough for the price I paid (4.99 euros/month with German hosting Contabo)
+I decided on a VPS (Virtual private server) and not on a dedicated server, as I do not have the speed/load/bandwidth requirements (unless this blog really picks up!) that would justify the need for it. And so far I have no complains: installing stuff, logging in, displaying the page, etc. seems good enough for the price I paid (4.99 euros/month with German hosting Contabo)
 
-Conneting domain and hosting
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-you need to do this ....
+"Linking" domain and hosting
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+You need to tell the domain provider that 
+
+.. image:: ../content/images/namecheap_setup.png
+   :scale: 100 %
+
+.. .. image:: ../content/images/namecheap_setup.png
+..    :height: 100 %
+..    :width: 100 %
+..    :scale: 10 cm
+..    :alt: alternate text
+..    :align: right
 
 
 Install OS and required infrastructure on the server side
 ----------------------------------------------------------
 
-After purchasing the VPS, you can choose what OS you want to install (you can change this later as well). I chose Fedora Linux as that's the OS I am familiar with. You are then sent via email a ``ssh`` login and pass, and also the login details for a ``vnc`` session. So now you need to ssh into the server and install the following stuff (remember to first create a user so you do not do all this things as ``root``)
+After purchasing the VPS, you can choose what OS you want to install (you can change this later as well). I chose Fedora Linux as that's the OS I am familiar with. You are then sent via email a ``ssh`` login and pass, and also the login details for a ``vnc`` session. After the OS is ready, so you can ssh into the VPS and install both the admin and webserver stuff (remember to first create a user so you do not do all this things as ``root``). Also it's important from a security perspective to disable the ssh login of ``RootLogin`` via password. You should ssh into the VPS with a non-root user with an ssh key.
+
+Not going to get into what these admin tools are for or how to install/use them, just listing them here for completeness. 
 
 .. code-block:: shell
 
-   sudo dnf install blabla
+  sudo dnf install fail2ban
+  sudo dnf install netstat
+  sudo dnf install webmin
 
-then do this
+.. note ::
+
+  webmin is an (optional to use, I did not use it eventually) tool supported by Contabo to admin the VPS via web. I believe different hosting providers may use different tools
+
+And now the actual stuff we will need to host our weblog
 
 .. code-block:: shell
 
-  sudo dnf install blabla
+  sudo dnf install nginx
+  sudo dnf install python3.9-devel
+  sudo dnf install install python3-certbot-nginx certbot
+  sudo dnf install python3-certbot-nginx certbot
 
+.. note ::
 
-* ir tanto a contabo como al namecheeap para cambiar ccositas ahi
+  I messed around with certbot installation via dnf packet manager but I believe finally I used the package recommended by certbot
 
 
 nginx
@@ -155,51 +180,55 @@ ojo con las ";" !!!!!!!!!!! Me estaba llevado a la direccion por default!!
 mencionar que es buena idea mirar los access.log y error.log en / en /var/log/nginx
 
 
-en /var/log/nginx
-2022/03/06 09:28:33 [warn] 276591#276591: conflicting server name "www.dubitico.com" on 0.0.0.0:80, ignored
-2022/03/06 09:28:33 [warn] 276592#276592: conflicting server name "www.dubitico.com" on 0.0.0.0:80, ignored
-2022/03/06 09:29:51 [warn] 276630#276630: conflicting server name "www.dubitico.com" on 0.0.0.0:80, ignored
-2022/03/06 09:29:51 [warn] 276631#276631: conflicting server name "www.dubitico.com" on 0.0.0.0:80, ignored
+.. code-block:: shell
+
+  en /var/log/nginx
+  2022/03/06 09:28:33 [warn] 276591#276591: conflicting server name "www.dubitico.com" on 0.0.0.0:80, ignored
+  2022/03/06 09:28:33 [warn] 276592#276592: conflicting server name "www.dubitico.com" on 0.0.0.0:80, ignored
+  2022/03/06 09:29:51 [warn] 276630#276630: conflicting server name "www.dubitico.com" on 0.0.0.0:80, ignored
+  2022/03/06 09:29:51 [warn] 276631#276631: conflicting server name "www.dubitico.com" on 0.0.0.0:80, ignored
 
 
 Decir que el puto certbot anyade otro server , parece que se puede quitar y no pasa nada ...
 
 
-server {
+.. code-block:: shell
 
- server_name www.kiteloop.io;
- root /var/www/kiteloop.io/html;
+  server {
 
-  index index.html index.htm;
+   server_name www.kiteloop.io;
+   root /var/www/kiteloop.io/html;
 
- location / {
-  try_files $uri $uri/ =404;
- }
+    index index.html index.htm;
 
-    listen [::]:443 ssl ipv6only=on; # managed by Certbot
-    listen 443 ssl; # managed by Certbot
-    ssl_certificate /etc/letsencrypt/live/www.kiteloop.io/fullchain.pem; # managed by Certbot
-    ssl_certificate_key /etc/letsencrypt/live/www.kiteloop.io/privkey.pem; # managed by Certbot
-    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
-    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+   location / {
+    try_files $uri $uri/ =404;
+   }
 
-}
+      listen [::]:443 ssl ipv6only=on; # managed by Certbot
+      listen 443 ssl; # managed by Certbot
+      ssl_certificate /etc/letsencrypt/live/www.kiteloop.io/fullchain.pem; # managed by Certbot
+      ssl_certificate_key /etc/letsencrypt/live/www.kiteloop.io/privkey.pem; # managed by Certbot
+      include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+      ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
 
-#server {
-#    if ($host = www.kiteloop.io) {
-#        return 301 https://$host$request_uri;
-#    } # managed by Certbot
-#
-#
-#
-# listen 80;
-# listen [::]:80;
-#
-# server_name www.kiteloop.io;
-#    return 404; # managed by Certbot
-#
-#
-#}
+  }
+
+  #server {
+  #    if ($host = www.kiteloop.io) {
+  #        return 301 https://$host$request_uri;
+  #    } # managed by Certbot
+  #
+  #
+  #
+  # listen 80;
+  # listen [::]:80;
+  #
+  # server_name www.kiteloop.io;
+  #    return 404; # managed by Certbot
+  #
+  #
+  #}
 
 
 certbot
@@ -211,12 +240,14 @@ Basically you need to do:
 
 
 .. code-block:: shell
+
   certbot --nginx
 
 
 You may need to stop nginx
 
 .. code-block:: shell
+
   Saving debug log to /var/log/letsencrypt/letsencrypt.log
   Requesting a certificate for dubitico.com
 
@@ -230,6 +261,7 @@ You may need to stop nginx
 if all goes well ...
 
 .. code-block:: shell
+
   Successfully received certificate.
   Certificate is saved at: /etc/letsencrypt/live/dubitico.com/fullchain.pem
   Key is saved at:         /etc/letsencrypt/live/dubitico.com/privkey.pem
@@ -247,6 +279,7 @@ if all goes well ...
 Test that you can renew
 
 .. code-block:: shell
+
   sudo certbot renew --dry-run
   Saving debug log to /var/log/letsencrypt/letsencrypt.log
 
