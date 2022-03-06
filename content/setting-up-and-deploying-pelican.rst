@@ -135,6 +135,142 @@ then do this
   sudo dnf install blabla
 
 
-and thats it
+* ir tanto a contabo como al namecheeap para cambiar ccositas ahi
 
 
+nginx
+------
+
+By default installed on /usr/share/nginx
+
+Do this to debug config
+
+.. code-block:: shell
+
+  nginx -t
+
+ojo con las ";" !!!!!!!!!!! Me estaba llevado a la direccion por default!!
+
+
+mencionar que es buena idea mirar los access.log y error.log en / en /var/log/nginx
+
+
+en /var/log/nginx
+2022/03/06 09:28:33 [warn] 276591#276591: conflicting server name "www.dubitico.com" on 0.0.0.0:80, ignored
+2022/03/06 09:28:33 [warn] 276592#276592: conflicting server name "www.dubitico.com" on 0.0.0.0:80, ignored
+2022/03/06 09:29:51 [warn] 276630#276630: conflicting server name "www.dubitico.com" on 0.0.0.0:80, ignored
+2022/03/06 09:29:51 [warn] 276631#276631: conflicting server name "www.dubitico.com" on 0.0.0.0:80, ignored
+
+
+Decir que el puto certbot anyade otro server , parece que se puede quitar y no pasa nada ...
+
+
+server {
+
+ server_name www.kiteloop.io;
+ root /var/www/kiteloop.io/html;
+
+  index index.html index.htm;
+
+ location / {
+  try_files $uri $uri/ =404;
+ }
+
+    listen [::]:443 ssl ipv6only=on; # managed by Certbot
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/www.kiteloop.io/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/www.kiteloop.io/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+}
+
+#server {
+#    if ($host = www.kiteloop.io) {
+#        return 301 https://$host$request_uri;
+#    } # managed by Certbot
+#
+#
+#
+# listen 80;
+# listen [::]:80;
+#
+# server_name www.kiteloop.io;
+#    return 404; # managed by Certbot
+#
+#
+#}
+
+
+certbot
+--------
+instalando certbot. its a bit messy.  I used the snap installation described on https://eff-certbot.readthedocs.io/en/stable/index.html
+
+
+Basically you need to do:
+
+
+.. code-block:: shell
+  certbot --nginx
+
+
+You may need to stop nginx
+
+.. code-block:: shell
+  Saving debug log to /var/log/letsencrypt/letsencrypt.log
+  Requesting a certificate for dubitico.com
+
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  Could not bind TCP port 80 because it is already in use by another process on
+  this system (such as a web server). Please stop the program in question and then
+  try again.
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  (R)etry/(C)ancel: R
+
+if all goes well ...
+
+.. code-block:: shell
+  Successfully received certificate.
+  Certificate is saved at: /etc/letsencrypt/live/dubitico.com/fullchain.pem
+  Key is saved at:         /etc/letsencrypt/live/dubitico.com/privkey.pem
+  This certificate expires on 2022-06-04.
+  These files will be updated when the certificate renews.
+  Certbot has set up a scheduled task to automatically renew this certificate in the background.
+
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  If you like Certbot, please consider supporting our work by:
+   * Donating to ISRG / Let's Encrypt:   https://letsencrypt.org/donate
+   * Donating to EFF:                    https://eff.org/donate-le
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+Test that you can renew
+
+.. code-block:: shell
+  sudo certbot renew --dry-run
+  Saving debug log to /var/log/letsencrypt/letsencrypt.log
+
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  Processing /etc/letsencrypt/renewal/dubitico.com.conf
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  Simulating renewal of an existing certificate for dubitico.com
+
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  Processing /etc/letsencrypt/renewal/www.kiteloop.io.conf
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  Simulating renewal of an existing certificate for www.kiteloop.io
+
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  Congratulations, all simulated renewals succeeded: 
+    /etc/letsencrypt/live/dubitico.com/fullchain.pem (success)
+    /etc/letsencrypt/live/www.kiteloop.io/fullchain.pem (success)
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+
+
+
+references
+===========
+
+https://www.linuxcapable.com/how-to-install-nginx-on-fedora-35/
