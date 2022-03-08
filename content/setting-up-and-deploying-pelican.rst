@@ -121,8 +121,11 @@ I decided on a VPS (Virtual private server) and not on a dedicated server, as I 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 You need to tell the domain provider that 
 
-.. image:: ../content/images/namecheap_setup.png
+.. ![Alt Text]({static}/namecheap_setup.png)
+
+.. image:: images/namecheap_setup.png
    :scale: 100 %
+   :alt: Capture from Namecheap control panel
 
 .. .. image:: ../content/images/namecheap_setup.png
 ..    :height: 100 %
