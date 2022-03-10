@@ -26,6 +26,7 @@ ifneq ($(PORT), 0)
 	PELICANOPTS += -p $(PORT)
 endif
 
+PELICANOPTS += --autoreload 
 
 help:
 	@echo 'Makefile for a pelican Web site                                           '
