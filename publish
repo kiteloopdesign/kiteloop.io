@@ -1,0 +1,3 @@
+source ~/env/bin/activate
+pelican "/home/kitesutra/www/kiteloop.io/content" -o "/home/kitesutra/www/kiteloop.io/output" -s "/home/kitesutra/www/kiteloop.io/pelicanconf.py"
+\cp -fr output/* /var/www/kiteloop.io/html/
